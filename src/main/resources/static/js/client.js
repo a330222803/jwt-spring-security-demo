@@ -96,6 +96,11 @@ $(function () {
 
                 $userInfoBody.append($authorities);
                 $userInfo.show();
+            },error: function (jqXHR, textStatus, errorThrown) {
+                if (jqXHR.status === 401) {
+                    $login.show();
+                    $notLoggedIn.show();
+                }
             }
         });
     }

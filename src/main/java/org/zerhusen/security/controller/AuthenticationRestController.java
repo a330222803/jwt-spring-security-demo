@@ -1,5 +1,8 @@
 package org.zerhusen.security.controller;
 
+import com.alibaba.fastjson.JSON;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 
 @RestController
 public class AuthenticationRestController {
+    private final Log logger = LogFactory.getLog(this.getClass());
 
     @Value("${jwt.header}")
     private String tokenHeader;
@@ -39,7 +43,7 @@ public class AuthenticationRestController {
 
     @RequestMapping(value = "${jwt.route.authentication.path}", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtAuthenticationRequest authenticationRequest, Device device) throws AuthenticationException {
-
+        logger.info(JSON.toJSONString(authenticationRequest));
         // Perform the security
         final Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -54,7 +58,14 @@ public class AuthenticationRestController {
         final String token = jwtTokenUtil.generateToken(userDetails, device);
 
         // Return the token
-        return ResponseEntity.ok(new JwtAuthenticationResponse(token));
+        JwtAuthenticationResponse.User user = new JwtAuthenticationResponse.User();
+        JwtUser jwtUser = (JwtUser)userDetails;
+        user.setName(jwtUser.getUsername());
+        user.setEmail(jwtUser.getEmail());
+        user.setId(String.valueOf(jwtUser.getId()));
+        JwtAuthenticationResponse response = new JwtAuthenticationResponse(token,user);
+        logger.info(JSON.toJSONString(response));
+        return ResponseEntity.ok(response);
     }
 
     @RequestMapping(value = "${jwt.route.authentication.refresh}", method = RequestMethod.GET)

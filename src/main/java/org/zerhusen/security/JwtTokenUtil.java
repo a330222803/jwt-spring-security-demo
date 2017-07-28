@@ -1,6 +1,7 @@
 package org.zerhusen.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -84,7 +85,9 @@ public class JwtTokenUtil implements Serializable {
                     .setSigningKey(secret)
                     .parseClaimsJws(token)
                     .getBody();
-        } catch (Exception e) {
+        }catch (ExpiredJwtException e){
+            claims = null;
+        }catch (Exception e) {
             claims = null;
         }
         return claims;
